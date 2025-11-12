@@ -38,7 +38,7 @@ public class DummyController {
         respuestaInterna.put("body", bodyString);
 
         // Esperar 5 segundos antes de enviar la respuesta
-        Thread.sleep(5000);
+        Thread.sleep(12000);
 
         return objectMapper.writeValueAsString(respuestaInterna);
     }
