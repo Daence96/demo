@@ -11,22 +11,32 @@ public class DummyController {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @PostMapping("/procesar")
-    public Map<String, Object> procesar(@RequestBody Map<String, Object> json) throws Exception {
+    public String procesar(@RequestBody Map<String, Object> json) throws Exception {
         // Obtener el packageId
         Object packageId = json.get("packageId");
 
-        // Crear nuevo mapa para la respuesta interna
+        // Crear el JSON interno más profundo
+        Map<String, Object> jsonInterno = new LinkedHashMap<>();
+        jsonInterno.put("packageId", packageId);
+        jsonInterno.put("respuesta", "respuesta del api");
+        String jsonInternoString = objectMapper.writeValueAsString(jsonInterno);
+
+        // Crear el body con la clave "json"
+        Map<String, Object> bodyMap = new LinkedHashMap<>();
+        bodyMap.put("json", jsonInternoString);
+        String bodyString = objectMapper.writeValueAsString(bodyMap);
+
+        // Crear el header
+        Map<String, String> header = new LinkedHashMap<>();
+        header.put("name", "Authorization");
+        header.put("value", "Bearer 5bb4a4026f8f1869f8d4610a5cec17befad592a312948becf677b1222059acf5");
+
+        // Crear la respuesta completa
         Map<String, Object> respuestaInterna = new LinkedHashMap<>();
-        respuestaInterna.put("packageId", packageId);
-        respuestaInterna.put("respuesta", "respuesta del api");
+        respuestaInterna.put("parameterQuery", new ArrayList<>());
+        respuestaInterna.put("parameterHeader", Arrays.asList(header));
+        respuestaInterna.put("body", bodyString);
 
-        // Convertir esa respuesta interna a JSON string
-        String jsonString = objectMapper.writeValueAsString(respuestaInterna);
-
-        // Crear el resultado final con clave "json"
-        Map<String, Object> respuestaFinal = new LinkedHashMap<>();
-        respuestaFinal.put("json", jsonString);
-
-        return respuestaFinal;
+        return objectMapper.writeValueAsString(respuestaInterna);
     }
 }
