@@ -12,26 +12,37 @@ public class DummyController {
 
     @PostMapping("/procesar")
     public Map<String, Object> procesar(@RequestBody Map<String, Object> json) throws Exception {
-        // Verifica que exista el campo "body"
-        if (!json.containsKey("body")) {
+        Object bodyRaw = json.get("body");
+
+        if (bodyRaw == null) {
             throw new IllegalArgumentException("El JSON debe contener la clave 'body'");
         }
 
-        // Extrae el cuerpo (body)
-        Map<String, Object> body = (Map<String, Object>) json.get("body");
+        Map<String, Object> body;
 
-        // Obtiene el packageId desde el body
+        // Si el body llega como JSON string (ej: "{ \"packageId\": \"123\" }"), parsearlo
+        if (bodyRaw instanceof String) {
+            body = objectMapper.readValue((String) bodyRaw, Map.class);
+        }
+        // Si ya es un mapa, usarlo directamente
+        else if (bodyRaw instanceof Map) {
+            body = (Map<String, Object>) bodyRaw;
+        } else {
+            throw new IllegalArgumentException("Formato de 'body' no reconocido");
+        }
+
+        // Obtener el packageId
         Object packageId = body.get("packageId");
 
-        // Crea un mapa para la respuesta interna
+        // Crear respuesta interna
         Map<String, Object> respuestaInterna = new LinkedHashMap<>();
         respuestaInterna.put("packageId", packageId);
         respuestaInterna.put("respuesta", "respuesta del api");
 
-        // Convierte la respuesta interna a JSON string
+        // Convertir la respuesta a string
         String jsonString = objectMapper.writeValueAsString(respuestaInterna);
 
-        // Crea el resultado final con la clave "json"
+        // Devolver la estructura esperada
         Map<String, Object> respuestaFinal = new LinkedHashMap<>();
         respuestaFinal.put("json", jsonString);
 
