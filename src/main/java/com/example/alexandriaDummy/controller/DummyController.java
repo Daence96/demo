@@ -21,8 +21,9 @@ public class DummyController {
             packageId
         );
 
-        // Crear el wrapper JSON con la clave "response" conteniendo el XML
+        // Crear la respuesta con correlationId y response
         Map<String, Object> respuesta = new LinkedHashMap<>();
+        respuesta.put("correlationId", "");
         respuesta.put("response", xmlInterno);
 
         // Esperar 12 segundos antes de enviar la respuesta
