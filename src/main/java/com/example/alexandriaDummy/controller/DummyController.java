@@ -1,5 +1,6 @@
 package com.example.alexandriaDummy.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
@@ -7,22 +8,26 @@ import java.util.*;
 @RequestMapping("/api")
 public class DummyController {
 
-    @PostMapping(value = "/procesar", produces = "application/xml")
-    public String procesar(@RequestBody Map<String, Object> json) throws InterruptedException {
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @PostMapping("/procesar")
+    public String procesar(@RequestBody Map<String, Object> json) throws Exception {
         // Obtener el packageId del JSON
         Object packageId = json.get("packageId");
 
-        // Crear la respuesta XML
-        String respuestaXml = """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <xml>
-              <packageId>%s</packageId>
-              <respuesta>respuesta del api</respuesta>
-            </xml>""".formatted(packageId);
+        // Crear el XML interno
+        String xmlInterno = String.format(
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?><xml><packageId>%s</packageId><respuesta>respuesta del api</respuesta></xml>",
+            packageId
+        );
+
+        // Crear el wrapper JSON con la clave "response" conteniendo el XML
+        Map<String, Object> respuesta = new LinkedHashMap<>();
+        respuesta.put("response", xmlInterno);
 
         // Esperar 12 segundos antes de enviar la respuesta
         Thread.sleep(12000);
 
-        return respuestaXml;
+        return objectMapper.writeValueAsString(respuesta);
     }
 }
