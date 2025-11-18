@@ -12,8 +12,9 @@ public class DummyController {
 
     @PostMapping("/procesar")
     public String procesar(@RequestBody Map<String, Object> json) throws Exception {
-        // Obtener el packageId del JSON
+        // Obtener el packageId y correlationId del JSON
         Object packageId = json.get("packageId");
+        Object correlationId = json.get("correlationId");
 
         // Crear el XML interno
         String xmlInterno = String.format(
@@ -23,7 +24,7 @@ public class DummyController {
 
         // Crear la respuesta con correlationId y response
         Map<String, Object> respuesta = new LinkedHashMap<>();
-        respuesta.put("correlationId", "");
+        respuesta.put("correlationId", correlationId != null ? correlationId : "");
         respuesta.put("response", xmlInterno);
 
         // Esperar 12 segundos antes de enviar la respuesta
