@@ -17,14 +17,29 @@ public class DummyController {
     @PostMapping("/procesar")
     public ResponseEntity<String> procesar(
             @RequestBody Map<String, Object> json,
+            @RequestHeader Map<String, String> headers,
             @RequestHeader(value = "url_callback", required = false) String urlCallback,
             @RequestHeader(value = "callback_url", required = false) String callbackUrl,
             @RequestHeader(value = "callbackUrl", required = false) String callbackUrlAlt) throws Exception {
+        
+        // Loguear todos los headers recibidos
+        System.out.println("========== HEADERS RECIBIDOS ==========");
+        headers.forEach((key, value) -> {
+            System.out.println(key + " = " + value);
+        });
+        System.out.println("=======================================");
+        
+        // Loguear el body recibido
+        System.out.println("========== BODY RECIBIDO ==========");
+        System.out.println(objectMapper.writeValueAsString(json));
+        System.out.println("===================================");
         
         // Determinar cual header de callback está presente
         String finalCallbackUrl = urlCallback != null ? urlCallback : 
                                   callbackUrl != null ? callbackUrl : 
                                   callbackUrlAlt;
+        
+        System.out.println("Callback URL detectada: " + (finalCallbackUrl != null ? finalCallbackUrl : "NINGUNA"));
 
         // Obtener el packageId y correlationId del JSON
         Object packageId = json.get("packageId");
