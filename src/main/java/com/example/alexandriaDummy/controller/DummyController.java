@@ -17,10 +17,7 @@ public class DummyController {
     @PostMapping("/procesar")
     public ResponseEntity<String> procesar(
             @RequestBody Map<String, Object> json,
-            @RequestHeader Map<String, String> headers,
-            @RequestHeader(value = "url_callback", required = false) String urlCallback,
-            @RequestHeader(value = "callback_url", required = false) String callbackUrl,
-            @RequestHeader(value = "callbackUrl", required = false) String callbackUrlAlt) throws Exception {
+            @RequestHeader Map<String, String> headers) throws Exception {
         
         // Loguear todos los headers recibidos
         System.out.println("========== HEADERS RECIBIDOS ==========");
@@ -34,12 +31,10 @@ public class DummyController {
         System.out.println(objectMapper.writeValueAsString(json));
         System.out.println("===================================");
         
-        // Determinar cual header de callback está presente
-        String finalCallbackUrl = urlCallback != null ? urlCallback : 
-                                  callbackUrl != null ? callbackUrl : 
-                                  callbackUrlAlt;
+        // Obtener replyAddress del JSON
+        String replyAddress = (String) json.get("replyAddress");
         
-        System.out.println("Callback URL detectada: " + (finalCallbackUrl != null ? finalCallbackUrl : "NINGUNA"));
+        System.out.println("Reply Address: " + (replyAddress != null ? replyAddress : "NINGUNA"));
 
         // Obtener el packageId y correlationId del JSON
         Object packageId = json.get("packageId");
@@ -58,25 +53,25 @@ public class DummyController {
 
         String respuestaJson = objectMapper.writeValueAsString(respuesta);
 
-        if (finalCallbackUrl != null && !finalCallbackUrl.isEmpty()) {
+        if (replyAddress != null && !replyAddress.isEmpty()) {
             // Enviar respuesta asíncrona después de 15 segundos
             CompletableFuture.runAsync(() -> {
                 try {
                     Thread.sleep(15000); // 15 segundos
-                    restTemplate.postForEntity(finalCallbackUrl, respuestaJson, String.class);
-                    System.out.println("Respuesta enviada a callback URL: " + finalCallbackUrl);
+                    restTemplate.postForEntity(replyAddress, respuestaJson, String.class);
+                    System.out.println("Respuesta enviada a replyAddress: " + replyAddress);
                 } catch (Exception e) {
-                    System.err.println("Error enviando callback: " + e.getMessage());
+                    System.err.println("Error enviando respuesta a replyAddress: " + e.getMessage());
                 }
             });
 
             // Retornar respuesta inmediata indicando que se procesará
             Map<String, Object> respuestaInmediata = new LinkedHashMap<>();
             respuestaInmediata.put("status", "accepted");
-            respuestaInmediata.put("message", "Request accepted. Response will be sent to callback URL in 15 seconds");
+            respuestaInmediata.put("message", "Request accepted. Response will be sent to replyAddress in 15 seconds");
             return ResponseEntity.accepted().body(objectMapper.writeValueAsString(respuestaInmediata));
         } else {
-            // Si no hay callback URL, comportamiento original (esperar y retornar)
+            // Si no hay replyAddress, comportamiento original (esperar y retornar)
             Thread.sleep(15000);
             return ResponseEntity.ok(respuestaJson);
         }
