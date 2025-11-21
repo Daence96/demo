@@ -31,8 +31,8 @@ public class DummyController {
         System.out.println(objectMapper.writeValueAsString(json));
         System.out.println("===================================");
         
-        // Obtener replyAddress del JSON
-        String replyAddress = (String) json.get("replyAddress");
+        // Obtener replyAddress de los headers (viene como "replyaddress" en minúsculas)
+        String replyAddress = headers.get("replyaddress");
         
         System.out.println("Reply Address: " + (replyAddress != null ? replyAddress : "NINGUNA"));
 
@@ -54,10 +54,10 @@ public class DummyController {
         String respuestaJson = objectMapper.writeValueAsString(respuesta);
 
         if (replyAddress != null && !replyAddress.isEmpty()) {
-            // Enviar respuesta asíncrona después de 15 segundos
+            // Enviar respuesta asíncrona después de 8 segundos
             CompletableFuture.runAsync(() -> {
                 try {
-                    Thread.sleep(15000); // 15 segundos
+                    Thread.sleep(8000); // 8 segundos
                     restTemplate.postForEntity(replyAddress, respuestaJson, String.class);
                     System.out.println("Respuesta enviada a replyAddress: " + replyAddress);
                 } catch (Exception e) {
@@ -68,11 +68,11 @@ public class DummyController {
             // Retornar respuesta inmediata indicando que se procesará
             Map<String, Object> respuestaInmediata = new LinkedHashMap<>();
             respuestaInmediata.put("status", "accepted");
-            respuestaInmediata.put("message", "Request accepted. Response will be sent to replyAddress in 15 seconds");
+            respuestaInmediata.put("message", "Request accepted. Response will be sent to replyAddress in 8 seconds");
             return ResponseEntity.accepted().body(objectMapper.writeValueAsString(respuestaInmediata));
         } else {
             // Si no hay replyAddress, comportamiento original (esperar y retornar)
-            Thread.sleep(15000);
+            Thread.sleep(8000);
             return ResponseEntity.ok(respuestaJson);
         }
     }
